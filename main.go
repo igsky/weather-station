@@ -4,7 +4,7 @@ import (
 	"flag"
 )
 
-var genCount = flag.Int("gen", 0, "Specifies how many datapoints to generate")
+var genCount = flag.Int("g", 0, "Specifies how many datapoints to generate")
 
 func main() {
 	flag.Parse()
