@@ -13,4 +13,5 @@ func main() {
 		startup(*genCount)
 	}
 
+	startServer()
 }
