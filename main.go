@@ -28,15 +28,15 @@ func createTable(db *sql.DB) {
 	logFatalErr(err)
 
 	_, err = db.Exec(`CREATE TABLE timeline (id INTEGER NOT NULL PRIMARY KEY,
-											 temperature REAL NOT NULL,
-						   					 humidity REAL NOT NULL,
-											 pressure REAL NOT NULL,
+											 temperature REAL,
+						   					 humidity REAL,
+											 pressure REAL,
 						   					 timestamp DATETIME)`)
 	logErr(err)
 }
 
 func main() {
-	var genCount = flag.Int("s", 60, "Read period in seconds")
+	var period = flag.Int("s", 60, "Read period in seconds")
 
 	var r = raspi.NewAdaptor()
 	var sensor = i2c.NewBME280Driver(
@@ -49,9 +49,11 @@ func main() {
 	logFatalErr(err)
 	defer db.Close()
 
+	createTable(db)
+
 	stmt, err := db.Prepare(`INSERT INTO timeline 
 							(temperature, humidity, temperature, timestamp)
-							VALUES (?, ?, ?, date('now'));`)
+							VALUES (?, ?, ?, datetime('now'));`)
 	logFatalErr(err)
 	defer stmt.Close()
 
@@ -66,7 +68,7 @@ func main() {
 	flag.Parse()
 
 	work := func() {
-		gobot.Every(time.Duration(*genCount)*time.Minute, func() {
+		gobot.Every(time.Duration(*period)*time.Second, func() {
 			writeReading(readSensors(sensor))
 		})
 	}
