@@ -1,14 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 )
 
 func logFatalErr(err error) {
 	if err != nil {
 		log.Fatal(err)
-		fmt.pr
 	}
 }
 
