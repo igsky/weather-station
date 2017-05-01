@@ -1,11 +1,9 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/drivers/i2c"
 	"gobot.io/x/gobot/platforms/raspi"
@@ -23,20 +21,9 @@ func readSensors(bme *i2c.BME280Driver) sensorReading {
 	return sensorReading{t, h, p}
 }
 
-func createTable(db *sql.DB) {
-	err := db.Ping()
-	logFatalErr(err)
-
-	_, err = db.Exec(`CREATE TABLE timeline (id INTEGER NOT NULL PRIMARY KEY,
-											 temperature REAL,
-						   					 humidity REAL,
-											 pressure REAL,
-						   					 timestamp DATETIME)`)
-	logErr(err)
-}
-
 func main() {
 	var period = flag.Int("s", 60, "Read period in seconds")
+	flag.Parse()
 
 	var r = raspi.NewAdaptor()
 	var sensor = i2c.NewBME280Driver(
@@ -45,27 +32,13 @@ func main() {
 		i2c.WithAddress(0x76),
 	)
 
-	db, err := sql.Open("sqlite3", "main.db")
-	logFatalErr(err)
+	InitDB("main.db")
 	defer db.Close()
 
-	createTable(db)
+	CreateTable()
 
-	stmt, err := db.Prepare(`INSERT INTO timeline 
-							(temperature, humidity, pressure, timestamp)
-							VALUES (?, ?, ?, datetime('now'));`)
-	logFatalErr(err)
-	defer stmt.Close()
-
-	writeReading := func(reading sensorReading) {
-		_, err := stmt.Exec(
-			reading.Temperature,
-			reading.Humidity,
-			reading.Pressure)
-		logFatalErr(err)
-	}
-
-	flag.Parse()
+	writeStmt, writeReading := CreateWriteStmt()
+	defer writeStmt.Close()
 
 	work := func() {
 		gobot.Every(time.Duration(*period)*time.Second, func() {
