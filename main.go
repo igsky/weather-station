@@ -52,7 +52,7 @@ func main() {
 	createTable(db)
 
 	stmt, err := db.Prepare(`INSERT INTO timeline 
-							(temperature, humidity, temperature, timestamp)
+							(temperature, humidity, pressure, timestamp)
 							VALUES (?, ?, ?, datetime('now'));`)
 	logFatalErr(err)
 	defer stmt.Close()
