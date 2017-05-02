@@ -28,7 +28,7 @@ func CreateTable() {
 	logErr(err)
 }
 
-func CreateWriteStmt() (*sql.Stmt, func(r sensorReading)) {
+func CreateWriter() (func() error, func(r sensorReading)) {
 	stmt, err := db.Prepare(`INSERT INTO timeline 
 							(temperature, humidity, pressure, timestamp)
 							VALUES (?, ?, ?, datetime('now'));`)
@@ -42,5 +42,15 @@ func CreateWriteStmt() (*sql.Stmt, func(r sensorReading)) {
 		logFatalErr(err)
 	}
 
-	return stmt, writeReading
+	return stmt.Close, writeReading
+}
+
+func CreateChunkReader() (func() error, func(...interface{}) (*sql.Rows, error)) {
+	stmt, err := db.Prepare(`
+		SELECT * FROM timeline
+		ORDER BY timestamp DESC
+		LIMIT 100;`)
+	logFatalErr(err)
+
+	return stmt.Close, stmt.Query
 }

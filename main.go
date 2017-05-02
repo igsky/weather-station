@@ -37,8 +37,8 @@ func main() {
 
 	CreateTable()
 
-	writeStmt, writeReading := CreateWriteStmt()
-	defer writeStmt.Close()
+	writerClose, writeReading := CreateWriter()
+	defer writerClose()
 
 	work := func() {
 		gobot.Every(time.Duration(*period)*time.Second, func() {
