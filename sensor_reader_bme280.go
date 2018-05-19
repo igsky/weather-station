@@ -24,3 +24,7 @@ func (s *SensorReaderBME280) Read() (SensorReading, error) {
 
 	return r, err
 }
+
+func NewSensorReaderBME280(d *i2c.BME280Driver) *SensorReaderBME280 {
+	return &SensorReaderBME280{driver: d}
+}
