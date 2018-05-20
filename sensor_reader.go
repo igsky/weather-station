@@ -6,6 +6,7 @@ type SensorReading struct {
 	Pressure    float32
 }
 
+// SensorReader is an interface to read data from sensors
 type SensorReader interface {
 	Read() (SensorReading, error)
 }
